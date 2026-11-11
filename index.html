@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3f5f0">
+    <title>Лера и Даня</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #26332c;
+        --muted: #78827b;
+        --green: #526c5a;
+        --green-dark: #3d5646;
+        --paper: #f3f5f0;
+        --line: #e4e9e1;
+        --white: #fff;
+        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse at 12% 8%, rgba(218, 228, 215, .55), transparent 30rem),
+          var(--paper);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        display: none;
+        width: min(1120px, calc(100% - 48px));
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 48px 0;
+        animation: arrive .7s cubic-bezier(.2, .75, .25, 1) both;
+      }
+
+      .page.is-active {
+        display: grid;
+      }
+
+      .question-page {
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: clamp(42px, 8vw, 112px);
+      }
+
+      .copy {
+        max-width: 470px;
+        padding: 12px 0;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 26px;
+        color: var(--green);
+        font-size: 11px;
+        font-weight: 650;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        width: 22px;
+        height: 1px;
+        content: "";
+        background: #91a28f;
+      }
+
+      h1,
+      h2,
+      p {
+        margin-top: 0;
+      }
+
+      h1,
+      h2 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 400;
+        letter-spacing: -.045em;
+      }
+
+      h1 {
+        max-width: 510px;
+        margin-bottom: 20px;
+        font-size: clamp(48px, 6.4vw, 76px);
+        line-height: .99;
+      }
+
+      .intro {
+        max-width: 350px;
+        margin-bottom: 37px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.75;
+      }
+
+      .answer-form {
+        max-width: 420px;
+      }
+
+      .input-label {
+        display: block;
+        margin-bottom: 10px;
+        color: #59665d;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .025em;
+      }
+
+      .input-row {
+        display: flex;
+        min-height: 60px;
+        padding: 5px;
+        border: 1px solid #dfe5dc;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, .76);
+        box-shadow: 0 10px 32px rgba(48, 65, 51, .045);
+        transition: border-color .2s, box-shadow .2s;
+      }
+
+      .input-row:focus-within {
+        border-color: #9cac9a;
+        box-shadow: 0 0 0 4px rgba(117, 143, 115, .12);
+      }
+
+      .input-row.has-error {
+        border-color: #9f6b68;
+        box-shadow: 0 0 0 4px rgba(159, 107, 104, .12);
+        animation: nudge .28s ease-in-out;
+      }
+
+      #constellation-answer {
+        width: 100%;
+        min-width: 0;
+        padding: 0 15px;
+        border: 0;
+        outline: 0;
+        color: var(--ink);
+        background: transparent;
+        font-size: 15px;
+      }
+
+      #constellation-answer::placeholder {
+        color: #a4ada5;
+      }
+
+      .music-widget {
+        position: fixed;
+        z-index: 5;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        max-width: calc(100vw - 32px);
+        padding: 8px 9px 8px 16px;
+        border: 1px solid rgba(220, 227, 218, .92);
+        border-radius: 999px;
+        background: rgba(250, 251, 248, .92);
+        box-shadow: 0 8px 28px rgba(48, 65, 51, .08);
+        backdrop-filter: blur(14px);
+      }
+
+      .music-caption {
+        min-width: 0;
+        margin: 0;
+        color: var(--green-dark);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .music-caption span {
+        display: block;
+      }
+
+      .music-caption span:last-child {
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .music-toggle {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        color: #fff;
+        background: var(--green);
+        cursor: pointer;
+        transition: background .2s, transform .2s;
+      }
+
+      .music-toggle:hover {
+        transform: scale(1.05);
+        background: var(--green-dark);
+      }
+
+      .music-toggle:focus-visible {
+        outline: 3px solid #a8b8a4;
+        outline-offset: 3px;
+      }
+
+      .music-toggle svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      .music-toggle .pause-icon,
+      .music-toggle[aria-pressed="true"] .play-icon {
+        display: none;
+      }
+
+      .music-toggle[aria-pressed="true"] .pause-icon {
+        display: block;
+      }
+
+      .music-status {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        clip-path: inset(50%);
+      }
+
+      .submit-button {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 0;
+        border-radius: 9px;
+        color: #fff;
+        background: var(--green);
+        cursor: pointer;
+        transition: background .2s, transform .2s;
+      }
+
+      .submit-button:hover {
+        transform: translateX(2px);
+        background: var(--green-dark);
+      }
+
+      .submit-button:focus-visible,
+      .back-button:focus-visible {
+        outline: 3px solid #a8b8a4;
+        outline-offset: 3px;
+      }
+
+      .submit-button svg {
+        width: 19px;
+        height: 19px;
+      }
+
+      .error-message {
+        min-height: 24px;
+        margin: 11px 0 0;
+        color: #925b58;
+        font-size: 13px;
+        opacity: 0;
+        transform: translateY(-3px);
+        transition: opacity .2s, transform .2s;
+      }
+
+      .error-message.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .photo-card {
+        position: relative;
+        min-height: min(620px, calc(100vh - 96px));
+        overflow: hidden;
+        border-radius: 180px 180px 18px 18px;
+        background: #17251f;
+        box-shadow: 0 30px 80px rgba(47, 61, 48, .17);
+      }
+
+      .photo-card .constellation-art {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        inset: 0;
+      }
+
+      .constellation-art .star {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: twinkle 4s ease-in-out infinite alternate;
+      }
+
+      .constellation-art .star:nth-of-type(3n) {
+        animation-delay: -1.7s;
+      }
+
+      .constellation-art .star:nth-of-type(4n) {
+        animation-delay: -2.6s;
+      }
+
+      .question-page.is-revealing .constellation-art .constellation-star {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: star-ignition 0.5s ease-out both;
+      }
+
+      .photo-card::after {
+        position: absolute;
+        content: "";
+        inset: 40% 0 0;
+        background: linear-gradient(transparent, rgba(28, 42, 33, .36));
+        pointer-events: none;
+      }
+
+      .timer-page {
+        position: relative;
+        align-content: center;
+        justify-items: center;
+        text-align: center;
+      }
+
+      .timer-page::before,
+      .timer-page::after {
+        position: absolute;
+        z-index: -1;
+        width: 270px;
+        height: 270px;
+        border: 1px solid rgba(115, 137, 113, .13);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .timer-page::before {
+        top: 8%;
+        left: 1%;
+      }
+
+      .timer-page::after {
+        right: 0;
+        bottom: 5%;
+        width: 190px;
+        height: 190px;
+      }
+
+      .timer-content {
+        width: min(760px, 100%);
+      }
+
+      .timer-page .eyebrow {
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+
+      .timer-title {
+        margin-bottom: 15px;
+        font-size: clamp(42px, 7vw, 70px);
+        line-height: 1.06;
+      }
+
+      .since {
+        margin-bottom: 42px;
+        color: var(--muted);
+        font-size: 14px;
+        letter-spacing: .06em;
+      }
+
+      .counter {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, .76);
+        box-shadow: 0 20px 60px rgba(48, 65, 51, .06);
+      }
+
+      .counter-item {
+        padding: 27px 12px 25px;
+      }
+
+      .counter-item + .counter-item {
+        border-left: 1px solid var(--line);
+      }
+
+      .counter-number {
+        display: block;
+        margin-bottom: 9px;
+        color: var(--green-dark);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(34px, 5vw, 52px);
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+      }
+
+      .counter-label {
+        color: #849087;
+        font-size: 11px;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+
+      .half-year {
+        margin: 32px 0 0;
+        color: var(--green);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(30px, 4vw, 40px);
+        font-style: italic;
+      }
+
+      .heart {
+        display: inline-block;
+        margin: 0 5px;
+        color: #9aafa0;
+        font-family: "Segoe UI", sans-serif;
+        font-size: 17px;
+        font-style: normal;
+        vertical-align: 5px;
+      }
+
+      .timer-constellation {
+        position: relative;
+        width: 132px;
+        height: 132px;
+        margin: 0 auto 22px;
+        overflow: hidden;
+        border: 5px solid rgba(255, 255, 255, .85);
+        border-radius: 50%;
+        background: #dce5d8;
+        box-shadow: 0 10px 30px rgba(48, 65, 51, .12);
+      }
+
+      .timer-constellation svg {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+      }
+
+      .back-button {
+        margin-top: 36px;
+        padding: 9px 12px;
+        border: 0;
+        color: #8a958c;
+        background: transparent;
+        font-size: 12px;
+        cursor: pointer;
+        transition: color .2s;
+      }
+
+      .back-button:hover {
+        color: var(--green-dark);
+      }
+
+      @keyframes arrive {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes nudge {
+        25% { transform: translateX(-3px); }
+        75% { transform: translateX(3px); }
+      }
+
+      @keyframes twinkle {
+        from { opacity: .58; }
+        to { opacity: 1; }
+      }
+
+      @keyframes star-ignition {
+        from { fill: #f9f5d9; transform: scale(1); }
+        to { fill: #fff; transform: scale(2.3); }
+      }
+
+      @media (max-width: 760px) {
+        .page {
+          width: min(520px, calc(100% - 36px));
+          min-height: 100svh;
+          padding: 30px 0;
+        }
+
+        .question-page {
+          grid-template-columns: 1fr;
+          align-content: center;
+          gap: 30px;
+        }
+
+        .copy {
+          order: 1;
+        }
+
+        .photo-card {
+          order: 0;
+          min-height: clamp(210px, 37vh, 310px);
+          border-radius: 120px 120px 14px 14px;
+        }
+
+        .eyebrow {
+          margin-bottom: 17px;
+        }
+
+        h1 {
+          font-size: clamp(46px, 12vw, 62px);
+        }
+
+        .intro {
+          margin-bottom: 25px;
+          font-size: 14px;
+        }
+
+        .music-widget {
+          top: 12px;
+          right: 12px;
+          gap: 10px;
+          padding-left: 13px;
+        }
+
+        .music-caption {
+          font-size: 11px;
+        }
+
+        .timer-page {
+          min-height: 100svh;
+        }
+
+        .since {
+          margin-bottom: 30px;
+        }
+
+        .counter-item {
+          padding: 20px 5px;
+        }
+
+        .counter-label {
+          font-size: 9px;
+          letter-spacing: .08em;
+        }
+
+        .timer-page::before {
+          top: 3%;
+          left: -38%;
+        }
+      }
+
+      @media (max-width: 390px) {
+        .counter-number {
+          font-size: 31px;
+        }
+
+        .counter-label {
+          font-size: 8px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: .01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="music-widget">
+        <p class="music-caption">
+          <span id="music-hint">Можно включить саундтрек</span>
+        </p>
+        <button
+          class="music-toggle"
+          id="music-toggle"
+          type="button"
+          aria-label="Включить саундтрек"
+          aria-pressed="false"
+          aria-describedby="music-status"
+        >
+          <svg class="play-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M8 5.75v12.5L18 12 8 5.75Z" fill="currentColor"/>
+          </svg>
+          <svg class="pause-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M8 6.5h3v11H8zm5 0h3v11h-3z" fill="currentColor"/>
+          </svg>
+        </button>
+        <audio id="together-audio" loop preload="none" aria-label="">
+          <source src="audio/our-song.mp3" type="audio/mpeg">
+          Ваш браузер не поддерживает воспроизведение аудио.
+        </audio>
+        <p class="music-status" id="music-status" role="status" aria-live="polite"></p>
+      </div>
+
+      <section class="page question-page is-active" id="question-page" aria-labelledby="question-title">
+        <div class="copy">
+          <p class="eyebrow">Хочу показать тебе кое-что важное.</p>
+          <h1 id="question-title">Мы далеко, но это созвездие освещает наши сердца</h1>
+          <p class="intro">Напиши его</p>
+          <form class="answer-form" id="answer-form" novalidate>
+            <div class="input-row" id="input-row">
+              <input
+                id="constellation-answer"
+                name="answer"
+                type="text"
+                placeholder="..."
+                autocomplete="off"
+                aria-describedby="error-message"
+                aria-invalid="false"
+                required
+              >
+              <button class="submit-button" type="submit" aria-label="Продолжить">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4.5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+            <p class="error-message" id="error-message" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+        <div class="photo-card" aria-label="">
+          <svg class="constellation-art" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="sky-title">
+            <defs>
+              <radialGradient id="sky-glow">
+                <stop offset="0" stop-color="#738d7a" stop-opacity=".35"/>
+                <stop offset="1" stop-color="#738d7a" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="sky-fade" x1="0" y1="0" x2="1" y2="1">
+                <stop stop-color="#17251f"/>
+                <stop offset=".55" stop-color="#25372e"/>
+                <stop offset="1" stop-color="#18241f"/>
+              </linearGradient>
+              <filter id="star-glow" x="-150%" y="-150%" width="400%" height="400%">
+                <feGaussianBlur stdDeviation="5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <rect width="800" height="1000" fill="url(#sky-fade)"/>
+            <ellipse cx="530" cy="480" rx="340" ry="390" fill="url(#sky-glow)"/>
+            <g fill="#f3f0d7" opacity=".8">
+              <circle class="star" cx="88" cy="164" r="1.8"/>
+              <circle class="star" cx="173" cy="265" r="1.2"/>
+              <circle class="star" cx="675" cy="170" r="1.5"/>
+              <circle class="star" cx="720" cy="361" r="1"/>
+              <circle class="star" cx="91" cy="501" r="1.1"/>
+              <circle class="star" cx="700" cy="650" r="1.5"/>
+              <circle class="star" cx="626" cy="825" r="1"/>
+              <circle class="star" cx="142" cy="790" r="1.4"/>
+              <circle class="star" cx="275" cy="122" r="1"/>
+              <circle class="star" cx="539" cy="125" r="1.1"/>
+              <circle class="star" cx="735" cy="500" r="1.2"/>
+              <circle class="star" cx="350" cy="841" r="1"/>
+              <circle class="star" cx="51" cy="679" r="1.1"/>
+              <circle class="star" cx="449" cy="217" r="1.5"/>
+              <circle class="star" cx="268" cy="696" r="1"/>
+              <circle class="star" cx="568" cy="712" r="1.1"/>
+              <circle class="star" cx="378" cy="352" r="1.1"/>
+              <circle class="star" cx="208" cy="454" r="1.4"/>
+              <circle class="star" cx="648" cy="552" r="1"/>
+              <circle class="star" cx="454" cy="901" r="1.3"/>
+            </g>
+            <g fill="none" stroke="#a9c1a8" stroke-opacity=".52" stroke-width="1.4">
+              <path d="M160 398 278 530 412 429 554 570 675 350"/>
+              <path d="M160 398 278 530 412 429 554 570 675 350" stroke-dasharray="2 8"/>
+            </g>
+            <g fill="#f9f5d9" filter="url(#star-glow)">
+              <circle class="constellation-star" cx="160" cy="398" r="4.3"/>
+              <circle class="constellation-star" cx="278" cy="530" r="3.6"/>
+              <circle class="constellation-star" cx="412" cy="429" r="4"/>
+              <circle class="constellation-star" cx="554" cy="570" r="3.4"/>
+              <circle class="constellation-star" cx="675" cy="350" r="4.6"/>
+            </g>
+            <g fill="#d5ddc8" font-family="Segoe UI, sans-serif" font-size="17" letter-spacing="1">
+              <text x="146" y="376">Шедар</text>
+              <text x="265" y="558">Каф</text>
+              <text x="395" y="407">Нави</text>
+              <text x="535" y="599">Рукба</text>
+              <text x="655" y="328">Сегин</text>
+            </g>
+          </svg>
+        </div>
+      </section>
+
+      <section class="page timer-page" id="timer-page" aria-labelledby="timer-title" aria-hidden="true">
+        <div class="timer-content">
+          <div class="timer-constellation" aria-hidden="true">
+            <svg viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="mini-sky" x1="0" y1="0" x2="1" y2="1">
+                  <stop stop-color="#263a30"/>
+                  <stop offset="1" stop-color="#526c5a"/>
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="50" fill="url(#mini-sky)"/>
+              <path d="m18 35 16 21 18-16 17 21 15-27" fill="none" stroke="#c7d5bd" stroke-opacity=".75" stroke-width="1"/>
+              <g fill="#fff5d5">
+                <circle cx="18" cy="35" r="2.1"/>
+                <circle cx="34" cy="56" r="1.7"/>
+                <circle cx="52" cy="40" r="2"/>
+                <circle cx="69" cy="61" r="1.7"/>
+                <circle cx="84" cy="34" r="2.2"/>
+              </g>
+              <g fill="#eff3e8" opacity=".72">
+                <circle cx="31" cy="20" r=".8"/>
+                <circle cx="72" cy="21" r=".7"/>
+                <circle cx="24" cy="77" r=".9"/>
+                <circle cx="75" cy="81" r=".8"/>
+                <circle cx="48" cy="78" r=".7"/>
+              </g>
+            </svg>
+          </div>
+          <h2 class="timer-title" id="timer-title">Как давно мы вместе</h2>
+          <p class="since">С 19 мая 2026</p>
+
+          <div class="counter" role="timer" aria-label="Время, которое мы вместе">
+            <div class="counter-item">
+              <span class="counter-number" id="days">000</span>
+              <span class="counter-label">дней</span>
+            </div>
+            <div class="counter-item">
+              <span class="counter-number" id="hours">00</span>
+              <span class="counter-label">часов</span>
+            </div>
+            <div class="counter-item">
+              <span class="counter-number" id="minutes">00</span>
+              <span class="counter-label">минут</span>
+            </div>
+            <div class="counter-item">
+              <span class="counter-number" id="seconds">00</span>
+              <span class="counter-label">секунд</span>
+            </div>
+          </div>
+
+          <p class="half-year">полгода <span class="heart" aria-hidden="true">✳</span> и целая вечность впереди</p>
+          <button class="back-button" id="back-button" type="button">← вернуться к вопросу</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const answerForm = document.querySelector("#answer-form");
+      const answerInput = document.querySelector("#constellation-answer");
+      const submitButton = answerForm.querySelector(".submit-button");
+      const inputRow = document.querySelector("#input-row");
+      const errorMessage = document.querySelector("#error-message");
+      const questionPage = document.querySelector("#question-page");
+      const timerPage = document.querySelector("#timer-page");
+      const backButton = document.querySelector("#back-button");
+      const togetherAudio = document.querySelector("#together-audio");
+      const musicStatus = document.querySelector("#music-status");
+      const musicToggle = document.querySelector("#music-toggle");
+      const musicHint = document.querySelector("#music-hint");
+      const togetherSince = new Date(2026, 4, 19);
+      let timerInterval;
+      let musicManuallyDisabled = false;
+      let isTransitioning = false;
+
+      function showPage(pageToShow, pageToHide) {
+        pageToHide.classList.remove("is-active");
+        pageToHide.setAttribute("aria-hidden", "true");
+        pageToShow.classList.add("is-active");
+        pageToShow.setAttribute("aria-hidden", "false");
+      }
+
+      function updateTimer() {
+        const elapsedSeconds = Math.max(0, Math.floor((Date.now() - togetherSince.getTime()) / 1000));
+        const days = Math.floor(elapsedSeconds / 86400);
+        const hours = Math.floor((elapsedSeconds % 86400) / 3600);
+        const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+        const seconds = elapsedSeconds % 60;
+
+        document.querySelector("#days").textContent = String(days).padStart(3, "0");
+        document.querySelector("#hours").textContent = String(hours).padStart(2, "0");
+        document.querySelector("#minutes").textContent = String(minutes).padStart(2, "0");
+        document.querySelector("#seconds").textContent = String(seconds).padStart(2, "0");
+      }
+
+      function clearError() {
+        errorMessage.textContent = "";
+        errorMessage.classList.remove("is-visible");
+        inputRow.classList.remove("has-error");
+        answerInput.setAttribute("aria-invalid", "false");
+      }
+
+      function updateMusicButton(isPlaying) {
+        musicToggle.setAttribute("aria-pressed", String(isPlaying));
+        musicToggle.setAttribute(
+          "aria-label",
+          isPlaying ? "Выключить саундтрек" : "Включить саундтрек"
+        );
+        musicHint.textContent = isPlaying
+          ? "Саундтрек включён"
+          : "Можно включить саундтрек";
+      }
+
+      togetherAudio.addEventListener("playing", () => {
+        updateMusicButton(true);
+        musicStatus.textContent = "Саундтрек играет";
+      });
+
+      togetherAudio.addEventListener("pause", () => {
+        updateMusicButton(false);
+        musicStatus.textContent = "Саундтрек выключен";
+      });
+
+      togetherAudio.addEventListener("error", () => {
+        updateMusicButton(false);
+        musicHint.textContent = "Не удалось загрузить саундтрек";
+        musicStatus.textContent = "Проверьте файл audio/our-song.mp3";
+      });
+
+      musicToggle.addEventListener("click", async () => {
+        if (!togetherAudio.paused) {
+          musicManuallyDisabled = true;
+          togetherAudio.pause();
+          return;
+        }
+
+        musicManuallyDisabled = false;
+        musicStatus.textContent = "Включаю саундтрек…";
+
+        try {
+          await togetherAudio.play();
+        } catch {
+          musicHint.textContent = "Нажми ещё раз, чтобы включить саундтрек";
+          musicStatus.textContent = "Браузер не разрешил воспроизведение";
+        }
+      });
+
+      answerForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (isTransitioning) {
+          return;
+        }
+
+        if (answerInput.value.trim().toLocaleLowerCase("ru-RU") !== "кассиопея") {
+          errorMessage.textContent = "Вы опечатались :)";
+          errorMessage.classList.add("is-visible");
+          inputRow.classList.add("has-error");
+          answerInput.setAttribute("aria-invalid", "true");
+          answerInput.focus();
+          return;
+        }
+
+        clearError();
+        isTransitioning = true;
+        answerInput.disabled = true;
+        submitButton.disabled = true;
+        questionPage.classList.add("is-revealing");
+
+        let playback = Promise.resolve();
+        if (!musicManuallyDisabled && togetherAudio.paused) {
+          musicStatus.textContent = "Включаю саундтрек…";
+          playback = togetherAudio.play().catch(() => {
+            musicStatus.textContent = "Нажми кнопку, чтобы включить саундтрек";
+          });
+        }
+
+        const revealDuration = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? 50
+          : 1900;
+        await Promise.all([
+          playback,
+          new Promise((resolve) => window.setTimeout(resolve, revealDuration))
+        ]);
+
+        questionPage.classList.remove("is-revealing");
+        showPage(timerPage, questionPage);
+        updateTimer();
+        window.clearInterval(timerInterval);
+        timerInterval = window.setInterval(updateTimer, 1000);
+        isTransitioning = false;
+      });
+
+      answerInput.addEventListener("input", clearError);
+
+      backButton.addEventListener("click", () => {
+        window.clearInterval(timerInterval);
+        showPage(questionPage, timerPage);
+        answerInput.disabled = false;
+        submitButton.disabled = false;
+        answerInput.focus();
+      });
+    </script>
+  </body>
+</html>
