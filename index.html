@@ -323,7 +323,7 @@
       .question-page.is-revealing .constellation-art .constellation-star {
         transform-box: fill-box;
         transform-origin: center;
-        animation: star-ignition 0.8s ease-out both;
+        animation: star-ignition 0.5s ease-out both;
       }
 
       .photo-card::after {
@@ -339,29 +339,6 @@
         align-content: center;
         justify-items: center;
         text-align: center;
-      }
-
-      .timer-page::before,
-      .timer-page::after {
-        position: absolute;
-        z-index: -1;
-        width: 270px;
-        height: 270px;
-        border: 1px solid rgba(115, 137, 113, .13);
-        border-radius: 50%;
-        content: "";
-      }
-
-      .timer-page::before {
-        top: 8%;
-        left: 1%;
-      }
-
-      .timer-page::after {
-        right: 0;
-        bottom: 5%;
-        width: 190px;
-        height: 190px;
       }
 
       .timer-content {
@@ -445,10 +422,8 @@
         height: 132px;
         margin: 0 auto 22px;
         overflow: hidden;
-        border: 5px solid rgba(255, 255, 255, .85);
         border-radius: 50%;
         background: #dce5d8;
-        box-shadow: 0 10px 30px rgba(48, 65, 51, .12);
       }
 
       .timer-constellation svg {
@@ -557,10 +532,6 @@
           letter-spacing: .08em;
         }
 
-        .timer-page::before {
-          top: 3%;
-          left: -38%;
-        }
       }
 
       @media (max-width: 390px) {
@@ -756,7 +727,7 @@
             </div>
           </div>
 
-          <p class="half-year">уже полгода <span class="heart" aria-hidden="true">✳</span> и целая вечность впереди :></p>
+          <p class="half-year">полгода <span class="heart" aria-hidden="true">✳</span> и целая вечность впереди</p>
           <button class="back-button" id="back-button" type="button">← вернуться к вопросу</button>
         </div>
       </section>
